@@ -17,4 +17,4 @@ class Metrics():
     def mse(self, predictions, labels):
         x = deepcopy(predictions)
         y = deepcopy(labels)
-        return torch.mean((x - y) ** 2.0)
+        return torch.mean((x - y) ** 2)
