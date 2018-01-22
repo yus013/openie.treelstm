@@ -13,7 +13,6 @@ class Tree(object):
         self.state = None
         for ch in self.children:
             ch.clear_state()
-            
 
     def add_child(self, child):
         self.num_children += 1
