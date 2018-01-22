@@ -50,19 +50,25 @@ class ChildSumTreeLSTM(nn.Module):
 
 # putting the whole model together
 class TreeModel(nn.Module):
-    def __init__(self, vocab_size, in_dim, mem_dim, hidden_dim, num_classes, sparsity, freeze):
+    def __init__(self, vocab_size, in_dim, mem_dim, num_classes, sparsity, freeze):
         super(SimilarityTreeLSTM, self).__init__()
-        self.emb = nn.Embedding(vocab_size, in_dim, padding_idx=constants.PAD, sparse=sparsity)
+        
+        self.sent_emb = nn.Embedding(vocab_size, in_dim, padding_idx=constants.PAD, sparse=sparsity)
+        self.arb_emb = nn.Embedding(4, 4, padding_idx=constants.PAD, sparse=sparsity)
+        
         if freeze:
-            self.emb.weight.requires_grad = False
-        self.childsumtreelstm = ChildSumTreeLSTM(in_dim, mem_dim)
+            self.sent_emb.weight.requires_grad = False
+        self.arb_emb.weight.requires_grad = False  # default freeze one-hot
 
+        self.childsumtreelstm = ChildSumTreeLSTM(in_dim, mem_dim)
         self.FC = nn.Linear(mem_dim, num_classes)
 
-    def forward(self, tree, inputs, arbvec):
-        emb_inputs = self.emb(inputs)
-        cat_inputs = torch.cat((emb_inputs, arbvec), dim=1)
-        state, hidden = self.childsumtreelstm(tree, cat_inputs)
+    def forward(self, tree, sent_input, arb_input):
+        sent_emb_input = self.sent_emb(sent_input)
+        arb_emb_input = self.arb_emb(arb_input)
+
+        cat_input = torch.cat((sent_emb_input, arb_emb_input), dim=1)
+        state, hidden = self.childsumtreelstm(tree, cat_input)
         
         output = F.log_softmax(self.FC(state))
 
