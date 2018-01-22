@@ -5,27 +5,20 @@ class Vocab(object):
         self.idx2wd = list()
         self.wd2idx = dict()
 
-        self._load_file(filename)
         self._add_specials(labels)
-        
+        self._add_file(filename)
+        self.update_idx()
 
     def __len__(self):
         return len(self.idx2wd)
     
-    def _load_file(self, filename):
+    def _add_file(self, filename):
         with open(filename, 'r') as f:
-            self.idx2wd = json.load(f)
-        self.update_idx()
+            self.idx2wd.extend(json.load(f))
     
     def _add_specials(self, labels):
         for label in labels:
-            if label not in self.wd2idx:
-                i = len(self.idx2wd)
-                self.idx2wd.append(label)
-                self.wd2idx[label] = i
-            else:
-                raise KeyError
-    # end add specials
+            self.idx2wd.append(label)
     
     def update_idx(self):
         self.wd2idx = dict()
