@@ -1,8 +1,19 @@
 # tree object from stanfordnlp/treelstm
 class Tree(object):
-    def __init__(self):
+    def __init__(self, idx):
         self.num_children = 0
         self.children = list()
+
+        self.idx = idx  # start from 0
+        self.state = None
+
+    def clear_state(self):
+        if self.state is None:
+            return
+        self.state = None
+        for ch in self.children:
+            ch.clear_state()
+            
 
     def add_child(self, child):
         self.num_children += 1
