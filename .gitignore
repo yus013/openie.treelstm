@@ -1,3 +1,5 @@
 */*.class
 lib/stanford-*/
 data/
+__pycache__/
+checkpoints/*
