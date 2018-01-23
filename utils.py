@@ -9,7 +9,7 @@ from vocab import Vocab
 # loading GLOVE word vectors
 # if emb_path file is found, will load that
 # else will load from raw_emb_path file & save
-def load_word_vectors(arb_emb_path, sent_emb_path, vocab, raw_sent_emb_path=None):
+def load_word_vectors(sent_emb_path, vocab, raw_sent_emb_path=None):
     
     if os.path.isfile(sent_emb_path):
         print("==> Sentence embedding found, loading to memory")
@@ -33,21 +33,7 @@ def load_word_vectors(arb_emb_path, sent_emb_path, vocab, raw_sent_emb_path=None
         torch.save(sent_vectors, sent_emb_path)
     # end loading sentence embedding file
 
-    if os.path.isfile(arb_emb_path):
-        print("==> ARB embedding found, loading to memory")
-        arb_vectors = torch.load(arb_emb_path)
-    else:
-        print("==> ARB embedding not found, preparing")
-        
-        arb_vectors = torch.zeros(4, 4)
-        arb_vectors[0][0] = 1.0
-        arb_vectors[1][1] = 1.0
-        arb_vectors[2][2] = 1.0
-        arb_vectors[3][3] = 1.0
-
-        torch.save(arb_vectors, arb_emb_path)
-    # end loading arb embedding file
-    return arb_vectors, sent_vectors
+    return sent_vectors
 
 
 # mapping from scalar to vector

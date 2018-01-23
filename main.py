@@ -138,23 +138,19 @@ def main():
     metrics = Metrics(2)  # 0-1 prediction
 
     # embeddings
-    arb_emb_path = os.path.join(args.data, "arb_emb.dat")
     sent_emb_path = os.path.join(args.data, "sent_emb.dat")
     raw_sent_emb_path = os.path.join(args.glove, 'glove.840B.300d.txt')
 
-    arb_emb, sent_emb = load_word_vectors(
-        arb_emb_path, sent_emb_path, vocab, raw_sent_emb_path
+    sent_emb = load_word_vectors(
+        sent_emb_path, vocab, raw_sent_emb_path
     )
-    logger.debug('==> arb embedding size: %d * %d' % (arb_emb.size()[0], arb_emb.size()[1]))
     logger.debug('==> sentence embedding size: %d * %d' % (sent_emb.size()[0], sent_emb.size()[1]))
     
     if args.cuda:
-        arb_emb.cuda()
         sent_emb.cuda()
 
     model.sent_emb.weight.data.copy_(sent_emb)
-    model.arb_emb.weight.data.copy_(arb_emb)
-
+    
     trainer = Trainer(args, model, criterion, optimizer)
 
     # train and test
