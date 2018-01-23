@@ -154,13 +154,13 @@ def main():
     best = float("-inf")
     for epoch in range(args.epochs):
         train_loss = trainer.train(train_dataset)
-        # train_loss, train_pred = trainer.test(train_dataset)
+        train_loss, train_pred = trainer.test(train_dataset)
         # dev_loss, dev_pred = trainer.test(dev_dataset)
         # test_loss, test_pred = trainer.test(test_dataset)
 
-        # train_pearson = metrics.pearson(train_pred, train_dataset.labels)
-        # train_mse = metrics.mse(train_pred, train_dataset.labels)
-        # logger.info('==> Epoch {}, Train \tLoss: {}\tPearson: {}\tMSE: {}'.format(epoch, train_loss, train_pearson, train_mse))
+        train_pearson = metrics.pearson(train_pred, train_dataset.labels)
+        train_mse = metrics.mse(train_pred, train_dataset.labels)
+        logger.info('==> Epoch {}, Train \tLoss: {}\tPearson: {}\tMSE: {}'.format(epoch, train_loss, train_pearson, train_mse))
         
         # dev_pearson = metrics.pearson(dev_pred, dev_dataset.labels)
         # dev_mse = metrics.mse(dev_pred, dev_dataset.labels)

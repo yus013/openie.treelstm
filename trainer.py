@@ -9,11 +9,12 @@ from utils import map_label_to_target
 class Trainer(object):
     def __init__(self, args, model, criterion, optimizer):
         super(Trainer, self).__init__()
-        self.args       = args
-        self.model      = model
-        self.criterion  = criterion
-        self.optimizer  = optimizer
-        self.epoch      = 0
+        self.args = args
+        self.model = model
+        self.criterion = criterion
+        self.optimizer = optimizer
+        self.epoch = 0
+        self.step = 0
 
     # helper function for training
     def train(self, dataset):
@@ -22,21 +23,19 @@ class Trainer(object):
         total_loss = 0.0
         indices = torch.randperm(len(dataset))
 
-        step = 0
         for idx in tqdm(range(len(dataset)),desc='Training epoch ' + str(self.epoch + 1) + ''):
             tree, sent, arb_batch, label_batch = dataset[indices[idx]]
             sent_len = sent.size()[0]
             sent_input = Var(sent)
             
             for i in range(len(arb_batch)):
-                step += 1
+                self.step += 1
                 label = label_batch[i]
                 target = Var(map_label_to_target(label, 2))
                 
                 # encode arb input
                 a, r, b = arb_batch[i]
                 arb_input = self._encode_arb(a, r, b, sent_len)
- 
                 
                 if self.args.cuda:
                     sent_input = sent_input.cuda()
@@ -49,7 +48,7 @@ class Trainer(object):
                 total_loss += loss.data[0]
                 loss.backward()
 
-                if step % self.args.batchsize == 0:
+                if self.step % self.args.batchsize == 0:
                     self.optimizer.step()
                     self.optimizer.zero_grad()
                 
@@ -63,9 +62,9 @@ class Trainer(object):
     # helper function for testing
     def test(self, dataset):
         self.model.eval()
-        total_loss = 0
-        # predictions = torch.zeros(len(dataset)) TODO: wait for further update
-        indices = torch.arange(1, dataset.num_classes + 1)
+        total_loss = 0 
+        predictions = [list() for _ in range(len(dataset))]
+        indices = torch.arange(0, dataset.num_classes)  # start from 0
 
         for idx in tqdm(range(len(dataset)), desc='Testing epoch  ' + str(self.epoch) + ''):
             tree, sent, arb_batch, label_batch = dataset[idx]
@@ -87,12 +86,15 @@ class Trainer(object):
                 output = self.model(tree, sent_input, arb_input)
                 loss = self.criterion(output, target)
                 total_loss += loss.data[0]
-
+                
+                # get prediction
+                output = output.data.squeeze().cpu()
+                predictions[idx].append(torch.dot(indices, torch.exp(output)))
                 tree.clear_state()
             # end for arb and label batch
         # end for dataset
             
-        return total_loss / len(dataset)
+        return total_loss / len(dataset), predictions
 
     def _encode_arb(self, a, r, b, sent_len):
         arb = torch.zeros(sent_len, 3)
@@ -103,4 +105,3 @@ class Trainer(object):
         for i in b:
             arb[i][2] = 1
         return Var(arb)
-
