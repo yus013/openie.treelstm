@@ -76,8 +76,8 @@ def main():
     arb_dev_dir = os.path.join(dev_dir, 'dev/')
     arb_test_dir = os.path.join(test_dir, 'test/')
 
+    # load vocabulary
     vocab_path = os.path.join(args.data, "vocab.json")
-
     vocab = Vocab(
         filename=vocab_path, 
         labels=[constants.PAD_WORD, constants.UNK_WORD, constants.BOS_WORD, constants.EOS_WORD]
@@ -85,7 +85,55 @@ def main():
     logger.debug('==> vocabulary size : %d ' % len(vocab))
 
     # load train dataset
-    
+    train_file = os.path.join(train_dir, "ER.dat")
+    if os.path.isfile(train_file):
+        train_dataset = torch.load(train_file)
+    else:
+        train_dataset = ERDataset(train_dir, vocab, 2)
+        torch.save(train_dataset)
+    logger.debug('==> train data size: %d' % len(train_dataset))
+
+    # load dev dataset
+    # TODO: under construction
+
+    # load test dataset
+    # TODO: under construction
+
+    # trainer: 
+    # tree model
+    model = TreeModel(
+        len(vocab),
+        args.input_dim,
+        args.mem_dim,
+        args.hidden_dim,
+        args.num_classes,
+        args.sparse,
+        args.freeze_embed
+    )
+
+    # criterion
+    criterion = nn.KLDivLoss()
+    if args.cuda:
+        model.cuda(), criterion.cuda()
+
+    # optimizer
+    if args.optim == 'adam':
+        optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, weight_decay=args.wd)
+    elif args.optim == 'adagrad':
+        optimizer = optim.Adagrad(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, weight_decay=args.wd)
+    elif args.optim == 'sgd':
+        optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, weight_decay=args.wd)
+    else:
+        raise Exception("Unknown optimzer")
+        
+    # metrics
+    metrics = Metrics(args.num_classes)
+
+
+
+
+
+
 
 
 

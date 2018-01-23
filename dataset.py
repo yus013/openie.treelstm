@@ -104,6 +104,4 @@ class ERDataset(data.Dataset):  # entity and relation
                 label_batch = list()
             label_batch.append(label)
         return labels
-
-
-        
+    
