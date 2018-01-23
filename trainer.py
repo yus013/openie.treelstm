@@ -33,6 +33,7 @@ class Trainer(object):
                 target = Var(map_label_to_target(label, 2))
                 
                 a, r, b =  arb_batch[i]
+                arb = torch.IntTensor(1, )
                 arb_input = None  # TODO: encode arb
                 
                 if self.args.cuda:

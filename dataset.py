@@ -79,15 +79,17 @@ class ERDataset(data.Dataset):  # entity and relation
 
         for line in open(filename):
             sent_id, a, r, b = line.strip().split()
-            if int(sent_id) != prev_sent_id:
+            if sent_id != prev_sent_id:
                 prev_sent_id = sent_id
-                arbs.append(arb_batch)
+                if arb_batch is not None:
+                    arbs.append(arb_batch)
                 arb_batch = list()
             a = list(map(int, a.split(',')))
             r = list(map(int, r.split(',')))
             b = list(map(int, b.split(',')))
             arb_batch.append((a, r, b))
-        # end open arb file
+        arbs.append(arb_batch)
+
         return arbs
 
     def read_labels(self, filename):
@@ -98,9 +100,12 @@ class ERDataset(data.Dataset):  # entity and relation
 
         for line in open(filename):
             sent_id, label = line.strip().split()
-            if int(sent_id) != prev_sent_id:
+            if sent_id != prev_sent_id:
                 prev_sent_id = sent_id
-                labels.append(label_batch)
+                if label_batch is not None:
+                    labels.append(label_batch)
                 label_batch = list()
-            label_batch.append(label)
+            label_batch.append(int(label))
+        labels.append(label_batch)
+        
         return labels
