@@ -64,18 +64,19 @@ def main():
         os.makedirs(args.save)
 
     # set directory
-    sent_dir = os.path.join(args.data, "sent/")
-    arb_dir = os.path.join(args.data, "arb/")
+    train_dir = os.path.join(args.data, 'train/')
+    dev_dir = os.path.join(args.data, 'dev/')
+    test_dir = os.path.join(args.data, 'test/')
 
-    sent_train_dir = os.path.join(sent_dir, 'train/')
-    sent_dev_dir = os.path.join(sent_dir, 'dev/')
-    sent_test_dir = os.path.join(sent_dir, 'test/')
+    sent_train_dir = os.path.join(train_dir, 'sent/')
+    sent_dev_dir = os.path.join(dev_dir, 'sent/')
+    sent_test_dir = os.path.join(test_dir, 'sent/')
 
-    arb_train_dir = os.path.join(arb_dir, 'train/')
-    arb_dev_dir = os.path.join(arb_dir, 'dev/')
-    arb_test_dir = os.path.join(arb_dir, 'test/')
+    arb_train_dir = os.path.join(train_dir, 'train/')
+    arb_dev_dir = os.path.join(dev_dir, 'dev/')
+    arb_test_dir = os.path.join(test_dir, 'test/')
 
-    vocab_path = os.path.join(args.data, "vocab.txt")
+    vocab_path = os.path.join(args.data, "vocab.json")
 
     vocab = Vocab(
         filename=vocab_path, 
@@ -83,6 +84,8 @@ def main():
     )
     logger.debug('==> vocabulary size : %d ' % len(vocab))
 
+    # load train dataset
+    
 
 
 

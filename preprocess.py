@@ -64,12 +64,26 @@ if __name__ == '__main__':
     data_dir = os.path.join(base_dir, 'data')
     lib_dir = os.path.join(base_dir, 'lib')
 
-    sent_dir = os.path.join(data_dir, 'sent')  # raw sentence
-    train_sent_dir = os.path.join(sent_dir, 'train')
-    # dev_sent_dir = os.path.join(sent_dir, 'dev')
-    # test_sent_dir = os.path.join(sent_dir, 'test')
-    # make_dirs([train_sent_dir, dev_sent_dir, test_sent_dir])
-    make_dirs([train_sent_dir])
+    train_dir = os.path.join(data_dir, 'train')
+    dev_dir = os.path.join(data_dir, 'dev')
+    test_dir = os.path.join(data_dir, 'test')
+    
+    make_dirs([train_dir, dev_dir, test_dir])
+
+    train_sent_dir = os.path.join(train_dir, 'sent')  # raw sentences
+    train_arb_dir = os.path.join(train_dir, 'arb')
+    
+    dev_sent_dir = os.path.join(dev_dir, 'sent')  # raw sentences
+    dev_arb_dir = os.path.join(dev_dir, 'arb')
+
+    test_sent_dir = os.path.join(test_dir, 'sent')  # raw sentences
+    test_arb_dir = os.path.join(test_dir, 'arb')
+
+    make_dirs([
+        train_sent_dir, train_arb_dir, 
+        dev_sent_dir, dev_arb_dir,
+        test_sent_dir, test_arb_dir
+    ])
 
     # java classpath for calling Stanford parser
     classpath = ':'.join([
@@ -82,16 +96,11 @@ if __name__ == '__main__':
     # parse(dev_sent_dir, cp=classpath)
     # parse(test_sent_dir, cp=classpath)
 
-    # get vocabulary
+    # build vocabulary
     build_vocab(
-        glob.glob(os.path.join(sent_dir, '*/*.toks')),  # glob: find files matching pattern
-        os.path.join(data_dir, 'vocab.txt'))
+        glob.glob(os.path.join(data_dir, '*/sent/*.toks')),  # glob: find files matching pattern
+        os.path.join(data_dir, 'vocab.json')
+    )
 
     # extract a-r-b
-    # TODO: wait for help
-    arb_dir = os.path.join(data_dir, 'arb')
-    train_arb_dir = os.path.join(arb_dir, 'train')  # arb
-    # dev_arb_dir = os.path.join(arb_dir, 'dev')
-    # test_arb_dir = os.path.join(arb_dir, 'test')
-    # make_dirs([train_arb_dir, dev_arb_dir, test_arb_dir])
-    make_dirs([train_arb_dir])
+    # TODO: wait for arb file
