@@ -141,29 +141,26 @@ def main():
     sent_emb_path = os.path.join(args.data, "sent_emb.dat")
     raw_sent_emb_path = os.path.join(args.glove, 'glove.840B.300d.txt')
 
-    sent_emb = load_word_vectors(
-        sent_emb_path, vocab, raw_sent_emb_path
-    )
-    logger.debug('==> sentence embedding size: %d * %d' % (sent_emb.size()[0], sent_emb.size()[1]))
+    sent_emb = load_word_vectors(sent_emb_path, vocab, raw_sent_emb_path)
     
+    logger.debug('==> sentence embedding size: %d * %d' % (sent_emb.size()[0], sent_emb.size()[1]))
     if args.cuda:
         sent_emb.cuda()
-
     model.sent_emb.weight.data.copy_(sent_emb)
-    
+
     trainer = Trainer(args, model, criterion, optimizer)
 
     # train and test
     best = float("-inf")
     for epoch in range(args.epochs):
         train_loss = trainer.train(train_dataset)
-        train_loss, train_pred = trainer.test(train_dataset)
+        # train_loss, train_pred = trainer.test(train_dataset)
         # dev_loss, dev_pred = trainer.test(dev_dataset)
         # test_loss, test_pred = trainer.test(test_dataset)
 
-        train_pearson = metrics.pearson(train_pred, train_dataset.labels)
-        train_mse = metrics.mse(train_pred, train_dataset.labels)
-        logger.info('==> Epoch {}, Train \tLoss: {}\tPearson: {}\tMSE: {}'.format(epoch, train_loss, train_pearson, train_mse))
+        # train_pearson = metrics.pearson(train_pred, train_dataset.labels)
+        # train_mse = metrics.mse(train_pred, train_dataset.labels)
+        # logger.info('==> Epoch {}, Train \tLoss: {}\tPearson: {}\tMSE: {}'.format(epoch, train_loss, train_pearson, train_mse))
         
         # dev_pearson = metrics.pearson(dev_pred, dev_dataset.labels)
         # dev_mse = metrics.mse(dev_pred, dev_dataset.labels)

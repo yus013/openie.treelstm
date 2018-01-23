@@ -58,7 +58,7 @@ class TreeModel(nn.Module):
         if freeze:
             self.sent_emb.weight.requires_grad = False
 
-        self.childsumtreelstm = ChildSumTreeLSTM(in_dim, mem_dim)
+        self.childsumtreelstm = ChildSumTreeLSTM(in_dim + 3, mem_dim)  # 3 extra one-hot
         self.FC = nn.Linear(mem_dim, num_classes)
 
     def forward(self, tree, sent_input, arb_input):

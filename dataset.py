@@ -44,7 +44,7 @@ class ERDataset(data.Dataset):  # entity and relation
 
     def read_sentence(self, line):
         indices = self.vocab.convert_to_idxs(line.split())
-        return torch.IntTensor(indices)
+        return torch.LongTensor(indices)
 
     def read_trees(self, filename):
         with open(filename, 'r') as f:

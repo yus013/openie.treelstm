@@ -25,6 +25,7 @@ class Trainer(object):
         step = 0
         for idx in tqdm(range(len(dataset)),desc='Training epoch ' + str(self.epoch + 1) + ''):
             tree, sent, arb_batch, label_batch = dataset[indices[idx]]
+            sent_len = sent.size()[0]
             sent_input = Var(sent)
             
             for i in range(len(arb_batch)):
@@ -32,9 +33,10 @@ class Trainer(object):
                 label = label_batch[i]
                 target = Var(map_label_to_target(label, 2))
                 
-                a, r, b =  arb_batch[i]
-                arb = torch.IntTensor(1, )
-                arb_input = None  # TODO: encode arb
+                # encode arb input
+                a, r, b = arb_batch[i]
+                arb_input = self._encode_arb(a, r, b, sent_len)
+ 
                 
                 if self.args.cuda:
                     sent_input = sent_input.cuda()
@@ -65,8 +67,9 @@ class Trainer(object):
         # predictions = torch.zeros(len(dataset)) TODO: wait for further update
         indices = torch.arange(1, dataset.num_classes + 1)
 
-        for idx in tqdm(range(len(dataset)),desc='Testing epoch  ' + str(self.epoch) + ''):
+        for idx in tqdm(range(len(dataset)), desc='Testing epoch  ' + str(self.epoch) + ''):
             tree, sent, arb_batch, label_batch = dataset[idx]
+            sent_len = sent.size()[0]
             sent_input = Var(sent, volatile=True)
 
             for i in range(len(arb_batch)):
@@ -74,14 +77,14 @@ class Trainer(object):
                 target =  Var(map_label_to_target(label, 2), volatile=True)
 
                 a, r, b = arb_batch[i]
-                arb_input = None  # TODO: encode arb
-
-                if sent_input.args.cuda:
+                arb_input = self._encode_arb(a, r, b, sent_len)
+                
+                if self.args.cuda:
                     sent_input = sent_input.cuda()
                     arb_input = arb_input.cuda()
                     target = target.cuda()
 
-                output = sent_input.model(tree, sent_input, arb_input)
+                output = self.model(tree, sent_input, arb_input)
                 loss = self.criterion(output, target)
                 total_loss += loss.data[0]
 
@@ -90,3 +93,14 @@ class Trainer(object):
         # end for dataset
             
         return total_loss / len(dataset)
+
+    def _encode_arb(self, a, r, b, sent_len):
+        arb = torch.zeros(sent_len, 3)
+        for i in a:
+            arb[i][0] = 1  # start from 1 
+        for i in r:
+            arb[i][1] = 1
+        for i in b:
+            arb[i][2] = 1
+        return Var(arb)
+
