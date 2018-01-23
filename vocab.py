@@ -1,11 +1,13 @@
 import json
+import constants
 
 class Vocab(object):
-    def __init__(self, filename, labels):  # default lower case
+    def __init__(self, filename, labels=None):  # default lower case
         self.idx2wd = list()
         self.wd2idx = dict()
 
-        self._add_specials(labels)
+        if labels is not None:
+            self._add_specials(labels)
         self._add_file(filename)
         self.update_idx()
 
@@ -26,12 +28,12 @@ class Vocab(object):
             self.wd2idx[wd] = i
     
     def get_idx(self, wd):
-        return self.wd2idx[wd.lower()]
+        return self.wd2idx.get(wd.lower(), self.wd2idx[constants.UNK_WORD])
 
     def get_wd(self, idx):
         return self.idx2wd[idx]
 
-    def convert_to_idxs(self, wd_lst, UNK, BOS=None, EOS=None):
+    def convert_to_idxs(self, wd_lst, BOS=None, EOS=None):
         """
         @param BOS: begin of sentence
         @param EOS: end of sentence
@@ -43,7 +45,7 @@ class Vocab(object):
             idx_lst.append(self.wd2idx[BOS])
         
         for wd in wd_lst:
-            idx_lst.append(self.wd2idx.get(wd.lower(), self.wd2idx[UNK]))
+            idx_lst.append(self.wd2idx.get(wd.lower(), self.wd2idx[constants.UNK_WORD]))
         
         if EOS is not None:
             idx_lst.append(self.wd2idx[EOS])
