@@ -24,7 +24,7 @@ class ERDataset(data.Dataset):  # entity and relation
         
         self.labels = self.read_labels(os.path.join(path, 'arb/label.txt'))
 
-        self.size = self.labels.size(0)
+        self.size = len(self.labels)
 
     def __len__(self):
         return self.size
@@ -43,7 +43,7 @@ class ERDataset(data.Dataset):  # entity and relation
         return sentences
 
     def read_sentence(self, line):
-        indices = self.vocab.convert_to_idxs(line.split(), constants.UNK_WORD)
+        indices = self.vocab.convert_to_idxs(line.split())
         return torch.IntTensor(indices)
 
     def read_trees(self, filename):
@@ -71,24 +71,24 @@ class ERDataset(data.Dataset):  # entity and relation
         # end build tree
         return root
 
-        def read_arbs(self, filename):
-            arbs = list()
-            
-            prev_sent_id = -1
-            arb_batch = None
+    def read_arbs(self, filename):
+        arbs = list()
+        
+        prev_sent_id = -1
+        arb_batch = None
 
-            for line in open(filename):
-                sent_id, a, r, b = line.strip().split()
-                if int(sent_id) != prev_sent_id:
-                    prev_sent_id = sent_id
-                    arbs.append(arb_batch)
-                    arb_batch = list()
-                a = list(map(int, a.split(',')))
-                r = list(map(int, r.split(',')))
-                b = list(map(int, b.split(',')))
-                arb_batch.append((a, r, b))
-            # end open arb file
-            return arbs
+        for line in open(filename):
+            sent_id, a, r, b = line.strip().split()
+            if int(sent_id) != prev_sent_id:
+                prev_sent_id = sent_id
+                arbs.append(arb_batch)
+                arb_batch = list()
+            a = list(map(int, a.split(',')))
+            r = list(map(int, r.split(',')))
+            b = list(map(int, b.split(',')))
+            arb_batch.append((a, r, b))
+        # end open arb file
+        return arbs
 
     def read_labels(self, filename):
         labels = list()
@@ -104,4 +104,3 @@ class ERDataset(data.Dataset):  # entity and relation
                 label_batch = list()
             label_batch.append(label)
         return labels
-    

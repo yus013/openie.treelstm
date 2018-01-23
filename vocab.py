@@ -24,7 +24,7 @@ class Vocab(object):
     
     def update_idx(self):
         self.wd2idx = dict()
-        for i, wd in enumerate(self.wd2idx):
+        for i, wd in enumerate(self.idx2wd):
             self.wd2idx[wd] = i
     
     def get_idx(self, wd):

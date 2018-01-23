@@ -90,7 +90,7 @@ def main():
         train_dataset = torch.load(train_file)
     else:
         train_dataset = ERDataset(train_dir, vocab, 2)
-        torch.save(train_dataset)
+        torch.save(train_dataset, train_file)
     logger.debug('==> train data size: %d' % len(train_dataset))
 
     # load dev dataset
@@ -105,8 +105,7 @@ def main():
         len(vocab),
         args.input_dim,
         args.mem_dim,
-        args.hidden_dim,
-        args.num_classes,
+        2,  # 0-1 prediction
         args.sparse,
         args.freeze_embed
     )
@@ -118,27 +117,36 @@ def main():
 
     # optimizer
     if args.optim == 'adam':
-        optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, weight_decay=args.wd)
+        optimizer = optim.Adam(
+            filter(lambda p: p.requires_grad, model.parameters()), 
+            lr=args.lr, weight_decay=args.wd
+        )
     elif args.optim == 'adagrad':
-        optimizer = optim.Adagrad(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, weight_decay=args.wd)
+        optimizer = optim.Adagrad(
+            filter(lambda p: p.requires_grad, model.parameters()), 
+            lr=args.lr, weight_decay=args.wd
+        )
     elif args.optim == 'sgd':
-        optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, weight_decay=args.wd)
+        optimizer = optim.SGD(
+            filter(lambda p: p.requires_grad, model.parameters()), 
+            lr=args.lr, weight_decay=args.wd
+        )
     else:
         raise Exception("Unknown optimzer")
-        
+
     # metrics
-    metrics = Metrics(args.num_classes)
+    metrics = Metrics(2)  # 0-1 prediction
 
+    # embeddings
+    arb_emb_path = os.path.join(args.data, "arb_emb.dat")
+    sent_emb_path = os.path.join(args.data, "sent_emb.dat")
+    raw_sent_emb_path = os.path.join(args.glove, 'glove.840B.300d.txt')
 
-
-
-
-
-
-
-
-
-
+    arb_emb, sent_emb = load_word_vectors(
+        arb_emb_path, sent_emb_path, vocab, raw_sent_emb_path
+    )
+    logger.debug('==> arb embedding size: %d * %d' % (arb_emb.size()[0], arb_emb.size()[1]))
+    logger.debug('==> sentence embedding size: %d * %d' % (sent_emb.size()[0], sent_emb.size()[1]))
     
 
 

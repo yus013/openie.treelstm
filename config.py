@@ -17,8 +17,6 @@ def parse_args():
                         help='Size of input word vector')
     parser.add_argument('--mem_dim', default=150, type=int,
                         help='Size of TreeLSTM cell state')
-    parser.add_argument('--hidden_dim', default=50, type=int,
-                        help='Size of classifier MLP')
     parser.add_argument('--freeze_embed', action='store_true',
                         help='Freeze word embeddings')
     # training arguments

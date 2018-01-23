@@ -9,13 +9,7 @@ from vocab import Vocab
 # loading GLOVE word vectors
 # if emb_path file is found, will load that
 # else will load from raw_emb_path file & save
-def load_word_vectors(arb_emb_path, sent_emb_path, vocab_path, raw_sent_emb_path=None):
-
-    if os.path.isfile(vocab_path):
-        print("==> Vocabulary found, loading to memory")
-        vocab = Vocab(vocab_path)
-    else:
-        raise Exception("No vocabulary file found")
+def load_word_vectors(arb_emb_path, sent_emb_path, vocab, raw_sent_emb_path=None):
     
     if os.path.isfile(sent_emb_path):
         print("==> Sentence embedding found, loading to memory")
@@ -30,9 +24,12 @@ def load_word_vectors(arb_emb_path, sent_emb_path, vocab_path, raw_sent_emb_path
         with open(raw_sent_emb_path) as f:
             for line in f:
                 txt_vec = line.strip().split()
-                wd = line[0].lower()
-                vec = torch.Tensor(list(map(float, txt_vec[1:])))
-                sent_vectors[vocab.get_idx(wd)] = vec
+                if len(txt_vec) == dim + 1:
+                    wd = txt_vec[0].lower()
+                    if wd in vocab.wd2idx:
+                        vec = torch.Tensor(list(map(float, txt_vec[1:])))
+                        sent_vectors[vocab.get_idx(wd)] = vec
+            # end for lines
         torch.save(sent_vectors, sent_emb_path)
     # end loading sentence embedding file
 
@@ -48,9 +45,9 @@ def load_word_vectors(arb_emb_path, sent_emb_path, vocab_path, raw_sent_emb_path
         arb_vectors[2][2] = 1.0
         arb_vectors[3][3] = 1.0
 
-        torch.save(arb_emb_path, arb_vectors)
+        torch.save(arb_vectors, arb_emb_path)
     # end loading arb embedding file
-    return arb_vectors, sent_vectors, vocab
+    return arb_vectors, sent_vectors
 
 
 # mapping from scalar to vector

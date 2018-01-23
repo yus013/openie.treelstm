@@ -51,7 +51,7 @@ class ChildSumTreeLSTM(nn.Module):
 # putting the whole model together
 class TreeModel(nn.Module):
     def __init__(self, vocab_size, in_dim, mem_dim, num_classes, sparsity, freeze):
-        super(SimilarityTreeLSTM, self).__init__()
+        super(TreeModel, self).__init__()
         
         self.sent_emb = nn.Embedding(vocab_size, in_dim, padding_idx=constants.PAD, sparse=sparsity)
         self.arb_emb = nn.Embedding(4, 4, padding_idx=constants.PAD, sparse=sparsity)
