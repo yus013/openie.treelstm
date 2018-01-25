@@ -3,3 +3,5 @@ lib/stanford-*/
 data/
 __pycache__/
 checkpoints/*
+*.ipynb
+*/*.ipynb
