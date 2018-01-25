@@ -86,10 +86,22 @@ def main():
     logger.debug('==> train data size: %d' % len(train_dataset))
 
     # load dev dataset
-    # TODO: under construction
+    dev_file = os.path.join(dev_dir, "ERdata.pt")
+    if os.path.isfile(dev_file):
+        dev_dataset = torch.load(dev_file)
+    else:
+        dev_dataset = ERDataset(dev_dir, vocab, 2)
+        torch.save(dev_dataset, dev_file)
+    logger.debug('==> dev data size: %d' % len(dev_dataset))
 
-    # load test dataset
-    # TODO: under construction
+    # load test dataset   
+    test_file = os.path.join(test_dir, "ERdata.pt")
+    if os.path.isfile(test_file):
+        test_dataset = torch.load(test_file)
+    else:
+        test_dataset = ERDataset(test_dir, vocab, 2)
+        torch.save(test_dataset, test_file)
+    logger.debug('==> test data size: %d' % len(test_dataset))
 
     # trainer: 
     # tree model
@@ -146,31 +158,33 @@ def main():
     best = float("-inf")
     for epoch in range(args.epochs):
         train_loss = trainer.train(train_dataset)
+
         train_loss, train_pred = trainer.test(train_dataset)
-        # dev_loss, dev_pred = trainer.test(dev_dataset)
-        # test_loss, test_pred = trainer.test(test_dataset)
+        dev_loss, dev_pred = trainer.test(dev_dataset)
+        test_loss, test_pred = trainer.test(test_dataset)
 
         train_pearson = metrics.pearson(train_pred, train_dataset.labels)
         train_mse = metrics.mse(train_pred, train_dataset.labels)
         logger.info('==> Epoch {}, Train \tLoss: {}\tPearson: {}\tMSE: {}'.format(epoch, train_loss, train_pearson, train_mse))
         
-        # dev_pearson = metrics.pearson(dev_pred, dev_dataset.labels)
-        # dev_mse = metrics.mse(dev_pred, dev_dataset.labels)
-        # logger.info('==> Epoch {}, Dev \tLoss: {}\tPearson: {}\tMSE: {}'.format(epoch, dev_loss, dev_pearson, dev_mse))
-        # test_pearson = metrics.pearson(test_pred, test_dataset.labels)
-        # test_mse = metrics.mse(test_pred, test_dataset.labels)
-        # logger.info('==> Epoch {}, Test \tLoss: {}\tPearson: {}\tMSE: {}'.format(epoch, test_loss, test_pearson, test_mse))
+        dev_pearson = metrics.pearson(dev_pred, dev_dataset.labels)
+        dev_mse = metrics.mse(dev_pred, dev_dataset.labels)
+        logger.info('==> Epoch {}, Dev \tLoss: {}\tPearson: {}\tMSE: {}'.format(epoch, dev_loss, dev_pearson, dev_mse))
 
-        # if best < dev_pearson:
-        #     best = dev_pearson
-        #     checkpoint = {
-        #         'model': trainer.model.state_dict(), 
-        #         'optim': trainer.optimizer,
-        #         'pearson': dev_pearson, 'mse': dev_mse,
-        #         'args': args, 'epoch': epoch
-        #         }
-        #     logger.debug('==> New optimum found, checkpointing everything now...')
-        #     torch.save(checkpoint, '%s.pt' % os.path.join(args.save, args.expname))
+        test_pearson = metrics.pearson(test_pred, test_dataset.labels)
+        test_mse = metrics.mse(test_pred, test_dataset.labels)
+        logger.info('==> Epoch {}, Test \tLoss: {}\tPearson: {}\tMSE: {}'.format(epoch, test_loss, test_pearson, test_mse))
+
+        if best < dev_pearson:
+            best = dev_pearson
+            checkpoint = {
+                'model': trainer.model.state_dict(), 
+                'optim': trainer.optimizer,
+                'pearson': dev_pearson, 'mse': dev_mse,
+                'args': args, 'epoch': epoch
+                }
+            logger.debug('==> New optimum found, checkpointing everything now...')
+            torch.save(checkpoint, '%s.pt' % os.path.join(args.save, args.expname))
 
 
 if __name__ == "__main__":
