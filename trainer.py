@@ -24,36 +24,24 @@ class Trainer(object):
         indices = torch.randperm(len(dataset))
 
         for idx in tqdm(range(len(dataset)),desc='Training epoch ' + str(self.epoch + 1) + ''):
-            tree, sent, arb_batch, label_batch = dataset[indices[idx]]
-            sent_len = sent.size()[0]
-            sent_input = Var(sent)
+            tree, sent, arb = dataset[indices[idx]]
             
-            for i in range(len(arb_batch)):
-                self.step += 1
-                label = label_batch[i]
-                target = Var(map_label_to_target(label, 2))
-                
-                # encode arb input
-                a, r, b = arb_batch[i]
-                arb_input = self._encode_arb(a, r, b, sent_len)
-                
-                if self.args.cuda:
-                    sent_input = sent_input.cuda()
-                    arb_input = arb_input.cuda()
-                    target = target.cuda()
+            self.step += 1
+            _, loss = self._forward(tree, sent, arb, True)
+            
+            total_loss += loss
 
-                output = self.model(tree, sent_input, arb_input)
-                loss = self.criterion(output, target)
+            if self.step % self.args.batchsize == 0:
+                self.optimizer.step()
+                self.optimizer.zero_grad()
+            
+            self.step += 1
+            _, loss = self._forward(tree, sent, arb, False)
+            total_loss += loss
 
-                total_loss += loss.data[0]
-                loss.backward()
-
-                if self.step % self.args.batchsize == 0:
-                    self.optimizer.step()
-                    self.optimizer.zero_grad()
-                
-                tree.clear_state()
-            # end for arb and label batch
+            if self.step % self.args.batchsize == 0:
+                self.optimizer.step()
+                self.optimizer.zero_grad()
         # end for dataset
         
         self.epoch += 1
@@ -62,44 +50,52 @@ class Trainer(object):
     # helper function for testing
     def test(self, dataset):
         self.model.eval()
-        total_loss = 0 
-        predictions = [list() for _ in range(len(dataset))]
+        total_loss = 0.0
+        predictions = torch.zeros(len(dataset))
         indices = torch.arange(0, dataset.num_classes)  # start from 0
 
         for idx in tqdm(range(len(dataset)), desc='Testing epoch  ' + str(self.epoch) + ''):
-            tree, sent, arb_batch, label_batch = dataset[idx]
-            sent_len = sent.size()[0]
-            sent_input = Var(sent, volatile=True)
+            tree, sent, arb = dataset[idx]
 
-            for i in range(len(arb_batch)):
-                label = label_batch[i]
-                target =  Var(map_label_to_target(label, 2), volatile=True)
+            output, loss = self._forward(tree, sent, arb, False)
+            total_loss += loss
 
-                a, r, b = arb_batch[i]
-                arb_input = self._encode_arb(a, r, b, sent_len)
-                
-                if self.args.cuda:
-                    sent_input = sent_input.cuda()
-                    arb_input = arb_input.cuda()
-                    target = target.cuda()
-
-                output = self.model(tree, sent_input, arb_input)
-                loss = self.criterion(output, target)
-                total_loss += loss.data[0]
-                
-                # get prediction
-                output = output.data.squeeze().cpu()
-                predictions[idx].append(torch.dot(indices, torch.exp(output)))
-                tree.clear_state()
-            # end for arb and label batch
+            # get prediction
+            output = output.data.squeeze().cpu()
+            predictions[idx] = torch.dot(indices, torch.exp(output))
         # end for dataset
             
         return total_loss / len(dataset), predictions
 
+    def _forward(self, tree, sent, arb, flag):
+        sent_len = sent.size()[0]
+        sent_input = Var(sent)
+
+        if flag:
+            a, r, b = arb[0], arb[1], arb[2]
+            target = Var(map_label_to_target(1, 2))
+        else:
+            a, r, b = arb[2], arb[1], arb[0]
+            target = Var(map_label_to_target(0, 2))
+        arb_input = self._encode_arb(a, r, b, sent_len)
+            
+        if self.args.cuda:
+            sent_input = sent_input.cuda()
+            arb_input = arb_input.cuda()
+            target = target.cuda()
+        
+        output = self.model(tree, sent_input, arb_input)
+        loss = self.criterion(output, target)
+        _loss = loss.data[0]
+        loss.backward()
+
+        tree.clear_state()
+        return output, _loss
+
     def _encode_arb(self, a, r, b, sent_len):
         arb = torch.zeros(sent_len, 3)
         for i in a:
-            arb[i][0] = 1  # start from 1 
+            arb[i][0] = 1  # start from 0 
         for i in r:
             arb[i][1] = 1
         for i in b:

@@ -5,7 +5,8 @@ Preprocessing script for SICK data.
 
 import os
 import glob
-import json
+import numpy as np
+import pandas as pd
 
 
 def make_dirs(dirs):
@@ -48,6 +49,17 @@ def build_vocab(filepaths, dst_path):
     with open(dst_path, 'w') as f:
         json.dump(list(vocab), fp=f)
 
+def build_np_vocab(filepaths, dst_path):
+    vocab = set()
+
+    print("=> find toks:")
+    for filepath in filepaths:
+        print(filepath)
+        toks = pd.read_pickle(filepath)
+        for sent in toks:
+            vocab |= set(sent)
+    np.save(dst_path, list(vocab))
+    print("=> done build vocabulary")
 
 def parse(dirpath, cp=''):
     dependency_parse(os.path.join(dirpath, 'sent.txt'), cp=cp, tokenize=True)
@@ -69,38 +81,12 @@ if __name__ == '__main__':
     test_dir = os.path.join(data_dir, 'test')
     
     make_dirs([train_dir, dev_dir, test_dir])
-
-    train_sent_dir = os.path.join(train_dir, 'sent')  # raw sentences
-    train_arb_dir = os.path.join(train_dir, 'arb')
-    
-    dev_sent_dir = os.path.join(dev_dir, 'sent')  # raw sentences
-    dev_arb_dir = os.path.join(dev_dir, 'arb')
-
-    test_sent_dir = os.path.join(test_dir, 'sent')  # raw sentences
-    test_arb_dir = os.path.join(test_dir, 'arb')
-
-    make_dirs([
-        train_sent_dir, train_arb_dir, 
-        dev_sent_dir, dev_arb_dir,
-        test_sent_dir, test_arb_dir
-    ])
-
-    # java classpath for calling Stanford parser
-    classpath = ':'.join([
-        lib_dir,
-        os.path.join(lib_dir, 'stanford-parser/stanford-parser.jar'),
-        os.path.join(lib_dir, 'stanford-parser/stanford-parser-3.5.1-models.jar')])
-
-    # parse sentences
-    parse(train_sent_dir, cp=classpath)
-    # parse(dev_sent_dir, cp=classpath)
-    # parse(test_sent_dir, cp=classpath)
-
     # build vocabulary
-    build_vocab(
-        glob.glob(os.path.join(data_dir, '*/sent/*.toks')),  # glob: find files matching pattern
-        os.path.join(data_dir, 'vocab.json')
+    # build_vocab(
+    #     glob.glob(os.path.join(data_dir, '*/sent/*.toks')),  # glob: find files matching pattern
+    #     os.path.join(data_dir, 'vocab.json')
+    # )
+    build_np_vocab(
+        glob.glob(os.path.join(data_dir, '*/*.pkl')),  # glob: find files matching pattern
+        os.path.join(data_dir, 'vocab.npy')
     )
-
-    # extract a-r-b
-    # TODO: wait for arb file

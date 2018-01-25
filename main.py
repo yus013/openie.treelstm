@@ -68,16 +68,8 @@ def main():
     dev_dir = os.path.join(args.data, 'dev/')
     test_dir = os.path.join(args.data, 'test/')
 
-    sent_train_dir = os.path.join(train_dir, 'sent/')
-    sent_dev_dir = os.path.join(dev_dir, 'sent/')
-    sent_test_dir = os.path.join(test_dir, 'sent/')
-
-    arb_train_dir = os.path.join(train_dir, 'train/')
-    arb_dev_dir = os.path.join(dev_dir, 'dev/')
-    arb_test_dir = os.path.join(test_dir, 'test/')
-
     # load vocabulary
-    vocab_path = os.path.join(args.data, "vocab.json")
+    vocab_path = os.path.join(args.data, "vocab.npy")
     vocab = Vocab(
         filename=vocab_path, 
         labels=[constants.PAD_WORD, constants.UNK_WORD, constants.BOS_WORD, constants.EOS_WORD]
@@ -85,7 +77,7 @@ def main():
     logger.debug('==> vocabulary size : %d ' % len(vocab))
 
     # load train dataset
-    train_file = os.path.join(train_dir, "ERdata.dat")
+    train_file = os.path.join(train_dir, "ERdata.pt")
     if os.path.isfile(train_file):
         train_dataset = torch.load(train_file)
     else:
@@ -138,7 +130,7 @@ def main():
     metrics = Metrics(2)  # 0-1 prediction
 
     # embeddings
-    sent_emb_path = os.path.join(args.data, "sent_emb.dat")
+    sent_emb_path = os.path.join(args.data, "sent_emb.pt")
     raw_sent_emb_path = os.path.join(args.glove, 'glove.840B.300d.txt')
 
     sent_emb = load_word_vectors(sent_emb_path, vocab, raw_sent_emb_path)

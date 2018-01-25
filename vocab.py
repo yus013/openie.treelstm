@@ -1,4 +1,4 @@
-import json
+import numpy as np
 import constants
 
 class Vocab(object):
@@ -15,8 +15,7 @@ class Vocab(object):
         return len(self.idx2wd)
     
     def _add_file(self, filename):
-        with open(filename, 'r') as f:
-            self.idx2wd.extend(json.load(f))
+        self.idx2wd.extend(np.load(filename))
     
     def _add_specials(self, labels):
         for label in labels:
