@@ -26,28 +26,24 @@ class Trainer(object):
         for idx in tqdm(range(len(dataset)),desc='Training epoch ' + str(self.epoch + 1) + ''):
             tree, sent, arb = dataset[indices[idx]]
             
-            self.step += 1
             try:
                 _, loss = self._forward(tree, sent, arb, True)
             except:
-                print(indices[idx])
-                exit(0)
+                continue
 
             total_loss += loss
-
+            self.step += 1
             if self.step % self.args.batchsize == 0:
                 self.optimizer.step()
                 self.optimizer.zero_grad()
             
-            self.step += 1
             try:
                 _, loss = self._forward(tree, sent, arb, False)
             except:
-                print(indices[idx])
-                exit(0)
+                continue
             
             total_loss += loss
-
+            self.step += 1
             if self.step % self.args.batchsize == 0:
                 self.optimizer.step()
                 self.optimizer.zero_grad()
@@ -66,7 +62,11 @@ class Trainer(object):
         for idx in tqdm(range(len(dataset)), desc='Testing epoch  ' + str(self.epoch) + ''):
             tree, sent, arb = dataset[idx]
 
-            output, loss = self._forward(tree, sent, arb, False)
+            try:
+                output, loss = self._forward(tree, sent, arb, False)
+            except:
+                continue
+
             total_loss += loss
 
             # get prediction
@@ -104,9 +104,9 @@ class Trainer(object):
     def _encode_arb(self, a, r, b, sent_len):
         arb = torch.zeros(sent_len, 3)
         for i in a:
-            arb[i][0] = 1  # start from 0 
+            arb[i, 0] = 1  # start from 0 
         for i in r:
-            arb[i][1] = 1
+            arb[i, 1] = 1
         for i in b:
-            arb[i][2] = 1
+            arb[i, 2] = 1
         return Var(arb)
