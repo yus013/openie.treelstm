@@ -1,27 +1,32 @@
 # Data Format
 
 ## Summary
-* data/[train, dev, test]/[sent, arb]
+* data/[train, dev, test]
 
+## arb.npy
+* [([ai], [ri], [bi]), ... ]
+* list(tuple(list(int), list(int), list(int)))
+* example: [[[0], [1, 2], [2, 3]] ... ]
 
-## arb.txt
-* sentence index start from 1
-* sentence appears in ascending order
-* arb index start from 0
-* arb is extracted from tokenized sentence
-* differen parts are divided by space
-* words are divided by comma
+```python
+arbs = np.load(arb_file_path)
+```
 
-sent_id a0,a1,...an r0,r1,...rn b0,b1,...,bn
+## parents.npy
+* number refers to the node's father
+* index starts from 1
+* 0 stants for root
+* list(list(int))
+* example: [[1, 2, 4, 0,]]
 
-## label.txt
-* sentence index start from 1
-* sentence appears in ascending order
-* label appears in the order with respect to arb
-* 0 stands for false while 1 stands for true
+```python
+parents = np.load(parents_file_path)
+```
 
-sent_id 1/0
+## sent.pkl
+* list(list(str))
+* [['Hello', 'world'], ...]
 
-## sent.txt
-* raw sentences
-
+```python
+parents = pd.read_pickle(sentence_file_path)
+```
