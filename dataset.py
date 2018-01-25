@@ -8,23 +8,23 @@ import torch.utils.data as data
 import constants
 from tree import Tree
 
+import numpy as np
+import pandas as pd
 
 # Dataset class
 class ERDataset(data.Dataset):  # entity and relation 
-    def __init__(self, path, vocab, num_classes):
+    def __init__(self, data_dir, vocab, num_classes):
         super(ERDataset, self).__init__()
         self.vocab = vocab
         self.num_classes = num_classes
 
-        self.sentences = self.read_sentences(os.path.join(path, 'sent/sent.toks'))
+        self.sentences = self.read_sentences(os.path.join(data_dir, 'sent.pkl'))
 
-        self.trees = self.read_trees(os.path.join(path, 'sent/sent.parents'))
+        self.trees = self.read_trees(os.path.join(data_dir, 'parents.npy'))
 
-        self.arbs = self.read_arbs(os.path.join(path, 'arb/arb.txt'))
+        self.arbs = self.read_arbs(os.path.join(data_dir, 'arb.npy'))
         
-        self.labels = self.read_labels(os.path.join(path, 'arb/label.txt'))
-
-        self.size = len(self.labels)
+        self.size = len(self.arbs)
 
     def __len__(self):
         return self.size
@@ -37,24 +37,20 @@ class ERDataset(data.Dataset):  # entity and relation
         return tree, sent, arb_batch, label_batch
 
     def read_sentences(self, filename):
-        with open(filename, 'r') as f:
-            lines = f.readlines()
-            sentences = [self.read_sentence(line) for line in tqdm(lines)]
+        lines = pd.read_pickle(filename)
+        sentences = [self.read_sentence(_) for _ in tqdm(lines)]
         return sentences
 
     def read_sentence(self, line):
-        indices = self.vocab.convert_to_idxs(line.split())
+        indices = self.vocab.convert_to_idxs(line)
         return torch.LongTensor(indices)
 
     def read_trees(self, filename):
-        with open(filename, 'r') as f:
-            lines = f.readlines()
-            trees = [self.read_tree(line) for line in tqdm(lines)]
+        lines = np.load(filename)
+        trees = [self.read_tree(_) for _ in tqdm(lines)]
         return trees
 
-    def read_tree(self, line):
-        parents = list(map(int, line.split()))
-
+    def read_tree(self, parents):
         trees = [Tree(idx) for idx in range(len(parents))]
         root = None
 
@@ -72,40 +68,4 @@ class ERDataset(data.Dataset):  # entity and relation
         return root
 
     def read_arbs(self, filename):
-        arbs = list()
-        
-        prev_sent_id = -1
-        arb_batch = None
-
-        for line in open(filename):
-            sent_id, a, r, b = line.strip().split()
-            if sent_id != prev_sent_id:
-                prev_sent_id = sent_id
-                if arb_batch is not None:
-                    arbs.append(arb_batch)
-                arb_batch = list()
-            a = list(map(int, a.split(',')))
-            r = list(map(int, r.split(',')))
-            b = list(map(int, b.split(',')))
-            arb_batch.append((a, r, b))
-        arbs.append(arb_batch)
-
-        return arbs
-
-    def read_labels(self, filename):
-        labels = list()
-        
-        prev_sent_id = -1
-        label_batch = None
-
-        for line in open(filename):
-            sent_id, label = line.strip().split()
-            if sent_id != prev_sent_id:
-                prev_sent_id = sent_id
-                if label_batch is not None:
-                    labels.append(label_batch)
-                label_batch = list()
-            label_batch.append(int(label))
-        labels.append(label_batch)
-        
-        return labels
+        return np.load(filename)
