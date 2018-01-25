@@ -21,12 +21,14 @@ class Metrics():
 
 
     def pearson(self, predictions, labels):
-        x, y = self._to_tensor(predictions, labels)
+        x = deepcopy(predictions)
+        y = deepcopy(labels)
         x = (x - x.mean()) / x.std()
         y = (y - y.mean()) / y.std()
         return torch.mean(torch.mul(x, y))
     
     def mse(self, predictions, labels):
-        x, y = self._to_tensor(predictions, labels)
+        x = deepcopy(predictions)
+        y = deepcopy(labels)
         return torch.mean((x - y) ** 2)
     

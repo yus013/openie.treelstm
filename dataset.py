@@ -35,8 +35,7 @@ class ERDataset(data.Dataset):  # entity and relation
         tree = deepcopy(self.trees[index])
         sent = deepcopy(self.sentences[index])
         arb_batch = deepcopy(self.arbs[index])
-        label_batch = deepcopy(self.labels[index])
-        return tree, sent, arb_batch, label_batch
+        return tree, sent, arb_batch
 
     def read_sentences(self, filename):
         lines = pd.read_pickle(filename)
