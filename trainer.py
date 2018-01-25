@@ -55,7 +55,7 @@ class Trainer(object):
         indices = torch.arange(0, dataset.num_classes)  # start from 0
 
         for idx in tqdm(range(len(dataset)), desc='Testing epoch  ' + str(self.epoch) + ''):
-            tree, sent, arb_batch, label_batch = dataset[idx]
+            tree, sent, arb = dataset[idx]
 
             output, loss = self._forward(tree, sent, arb, False)
             total_loss += loss
