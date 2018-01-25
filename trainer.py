@@ -27,8 +27,12 @@ class Trainer(object):
             tree, sent, arb = dataset[indices[idx]]
             
             self.step += 1
-            _, loss = self._forward(tree, sent, arb, True)
-            
+            try:
+                _, loss = self._forward(tree, sent, arb, True)
+            except:
+                print(indices[idx])
+                exit(0)
+
             total_loss += loss
 
             if self.step % self.args.batchsize == 0:
@@ -36,7 +40,12 @@ class Trainer(object):
                 self.optimizer.zero_grad()
             
             self.step += 1
-            _, loss = self._forward(tree, sent, arb, False)
+            try:
+                _, loss = self._forward(tree, sent, arb, False)
+            except:
+                print(indices[idx])
+                exit(0)
+            
             total_loss += loss
 
             if self.step % self.args.batchsize == 0:
