@@ -34,8 +34,8 @@ class ERDataset(data.Dataset):  # entity and relation
     def __getitem__(self, index):
         tree = deepcopy(self.trees[index])
         sent = deepcopy(self.sentences[index])
-        arb_batch = deepcopy(self.arbs[index])
-        return tree, sent, arb_batch
+        arb = deepcopy(self.arbs[index])
+        return tree, sent, arb
 
     def read_sentences(self, filename):
         lines = pd.read_pickle(filename)
@@ -70,3 +70,7 @@ class ERDataset(data.Dataset):  # entity and relation
 
     def read_arbs(self, filename):
         return np.load(filename)
+
+    @property
+    def labels(self):
+        return torch.zeros(1, len(self.arbs))
