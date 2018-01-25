@@ -68,16 +68,8 @@ def main():
     dev_dir = os.path.join(args.data, 'dev/')
     test_dir = os.path.join(args.data, 'test/')
 
-    sent_train_dir = os.path.join(train_dir, 'sent/')
-    sent_dev_dir = os.path.join(dev_dir, 'sent/')
-    sent_test_dir = os.path.join(test_dir, 'sent/')
-
-    arb_train_dir = os.path.join(train_dir, 'train/')
-    arb_dev_dir = os.path.join(dev_dir, 'dev/')
-    arb_test_dir = os.path.join(test_dir, 'test/')
-
     # load vocabulary
-    vocab_path = os.path.join(args.data, "vocab.json")
+    vocab_path = os.path.join(args.data, "vocab.npy")
     vocab = Vocab(
         filename=vocab_path, 
         labels=[constants.PAD_WORD, constants.UNK_WORD, constants.BOS_WORD, constants.EOS_WORD]
@@ -85,7 +77,7 @@ def main():
     logger.debug('==> vocabulary size : %d ' % len(vocab))
 
     # load train dataset
-    train_file = os.path.join(train_dir, "ERdata.dat")
+    train_file = os.path.join(train_dir, "ERdata.pt")
     if os.path.isfile(train_file):
         train_dataset = torch.load(train_file)
     else:
@@ -138,7 +130,7 @@ def main():
     metrics = Metrics(2)  # 0-1 prediction
 
     # embeddings
-    sent_emb_path = os.path.join(args.data, "sent_emb.dat")
+    sent_emb_path = os.path.join(args.data, "sent_emb.pt")
     raw_sent_emb_path = os.path.join(args.glove, 'glove.840B.300d.txt')
 
     sent_emb = load_word_vectors(sent_emb_path, vocab, raw_sent_emb_path)
@@ -148,37 +140,37 @@ def main():
         sent_emb.cuda()
     model.sent_emb.weight.data.copy_(sent_emb)
 
-    trainer = Trainer(args, model, criterion, optimizer)
+    # trainer = Trainer(args, model, criterion, optimizer)
 
-    # train and test
-    best = float("-inf")
-    for epoch in range(args.epochs):
-        train_loss = trainer.train(train_dataset)
-        train_loss, train_pred = trainer.test(train_dataset)
-        # dev_loss, dev_pred = trainer.test(dev_dataset)
-        # test_loss, test_pred = trainer.test(test_dataset)
+    # # train and test
+    # best = float("-inf")
+    # for epoch in range(args.epochs):
+    #     train_loss = trainer.train(train_dataset)
+    #     train_loss, train_pred = trainer.test(train_dataset)
+    #     # dev_loss, dev_pred = trainer.test(dev_dataset)
+    #     # test_loss, test_pred = trainer.test(test_dataset)
 
-        train_pearson = metrics.pearson(train_pred, train_dataset.labels)
-        train_mse = metrics.mse(train_pred, train_dataset.labels)
-        logger.info('==> Epoch {}, Train \tLoss: {}\tPearson: {}\tMSE: {}'.format(epoch, train_loss, train_pearson, train_mse))
+    #     train_pearson = metrics.pearson(train_pred, train_dataset.labels)
+    #     train_mse = metrics.mse(train_pred, train_dataset.labels)
+    #     logger.info('==> Epoch {}, Train \tLoss: {}\tPearson: {}\tMSE: {}'.format(epoch, train_loss, train_pearson, train_mse))
         
-        # dev_pearson = metrics.pearson(dev_pred, dev_dataset.labels)
-        # dev_mse = metrics.mse(dev_pred, dev_dataset.labels)
-        # logger.info('==> Epoch {}, Dev \tLoss: {}\tPearson: {}\tMSE: {}'.format(epoch, dev_loss, dev_pearson, dev_mse))
-        # test_pearson = metrics.pearson(test_pred, test_dataset.labels)
-        # test_mse = metrics.mse(test_pred, test_dataset.labels)
-        # logger.info('==> Epoch {}, Test \tLoss: {}\tPearson: {}\tMSE: {}'.format(epoch, test_loss, test_pearson, test_mse))
+    #     # dev_pearson = metrics.pearson(dev_pred, dev_dataset.labels)
+    #     # dev_mse = metrics.mse(dev_pred, dev_dataset.labels)
+    #     # logger.info('==> Epoch {}, Dev \tLoss: {}\tPearson: {}\tMSE: {}'.format(epoch, dev_loss, dev_pearson, dev_mse))
+    #     # test_pearson = metrics.pearson(test_pred, test_dataset.labels)
+    #     # test_mse = metrics.mse(test_pred, test_dataset.labels)
+    #     # logger.info('==> Epoch {}, Test \tLoss: {}\tPearson: {}\tMSE: {}'.format(epoch, test_loss, test_pearson, test_mse))
 
-        # if best < dev_pearson:
-        #     best = dev_pearson
-        #     checkpoint = {
-        #         'model': trainer.model.state_dict(), 
-        #         'optim': trainer.optimizer,
-        #         'pearson': dev_pearson, 'mse': dev_mse,
-        #         'args': args, 'epoch': epoch
-        #         }
-        #     logger.debug('==> New optimum found, checkpointing everything now...')
-        #     torch.save(checkpoint, '%s.pt' % os.path.join(args.save, args.expname))
+    #     # if best < dev_pearson:
+    #     #     best = dev_pearson
+    #     #     checkpoint = {
+    #     #         'model': trainer.model.state_dict(), 
+    #     #         'optim': trainer.optimizer,
+    #     #         'pearson': dev_pearson, 'mse': dev_mse,
+    #     #         'args': args, 'epoch': epoch
+    #     #         }
+    #     #     logger.debug('==> New optimum found, checkpointing everything now...')
+    #     #     torch.save(checkpoint, '%s.pt' % os.path.join(args.save, args.expname))
 
 
 if __name__ == "__main__":

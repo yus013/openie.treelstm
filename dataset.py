@@ -13,16 +13,18 @@ import pandas as pd
 
 # Dataset class
 class ERDataset(data.Dataset):  # entity and relation 
-    def __init__(self, data_dir, vocab, num_classes):
+    def __init__(self, dataset_dir, vocab, num_classes):
         super(ERDataset, self).__init__()
         self.vocab = vocab
         self.num_classes = num_classes
 
-        self.sentences = self.read_sentences(os.path.join(data_dir, 'sent.pkl'))
+        sent_path = os.path.join(dataset_dir, 'sent.pkl')
+        tree_path = os.path.join(dataset_dir, 'parents.npy')
+        arb_path = os.path.join(dataset_dir, 'arb.npy')
 
-        self.trees = self.read_trees(os.path.join(data_dir, 'parents.npy'))
-
-        self.arbs = self.read_arbs(os.path.join(data_dir, 'arb.npy'))
+        self.sentences = self.read_sentences(sent_path)
+        self.trees = self.read_trees(tree_path)
+        self.arbs = self.read_arbs(arb_path)
         
         self.size = len(self.arbs)
 
